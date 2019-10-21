@@ -116,13 +116,10 @@ def progress(iterator, prefix):
         yield data
 
         written += len(data)
-
-            speed_written = written
-
-
-            status = create_status_line(
-                written=format_filesize(written)
-            )
-            print_inplace(status)
+        speed_written = written
+        status = create_status_line(
+        written=format_filesize(written)
+        )
+        print_inplace(status)
     sys.stderr.write("\n")
     sys.stderr.flush()
