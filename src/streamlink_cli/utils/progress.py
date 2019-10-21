@@ -6,11 +6,7 @@ from time import time
 from ..compat import is_win32, get_terminal_size
 
 PROGRESS_FORMATS = (
-    "[download][{prefix}] Written {written} ({elapsed} @ {speed}/s)",
-    "[download] Written {written} ({elapsed} @ {speed}/s)",
-    "[download] {written} ({elapsed} @ {speed}/s)",
-    "[download] {written} ({elapsed})",
-    "[download] {written}"
+    "{written}"
 )
 
 # widths generated from
@@ -145,10 +141,7 @@ def progress(iterator, prefix):
             speed = speed_history_written / speed_history_elapsed
 
             status = create_status_line(
-                prefix=prefix,
-                written=format_filesize(written),
-                elapsed=format_time(elapsed),
-                speed=format_filesize(speed)
+                written=format_filesize(written)
             )
             print_inplace(status)
     sys.stderr.write("\n")
