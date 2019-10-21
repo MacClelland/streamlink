@@ -6,7 +6,11 @@ from time import time
 from ..compat import is_win32, get_terminal_size
 
 PROGRESS_FORMATS = (
-    "{written}"
+    "[download][{prefix}] Written {written} ({elapsed} @ {speed}/s)",
+    "[download] Written {written} ({elapsed} @ {speed}/s)",
+    "[download] {written} ({elapsed} @ {speed}/s)",
+    "[download] {written} ({elapsed})",
+    "[download] {written}"
 )
 
 # widths generated from
@@ -93,12 +97,12 @@ def format_time(elapsed):
     return rval
 
 
-def create_status_line():
+def create_status_line(**params):
     """Creates a status line with appropriate size."""
     max_size = get_terminal_size().columns - 1
 
     for fmt in PROGRESS_FORMATS:
-        
+        status = fmt.format(**params)
 
         if len(status) <= max_size:
             break
