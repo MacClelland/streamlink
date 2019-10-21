@@ -97,9 +97,8 @@ def create_status_line(**params):
     """Creates a status line with appropriate size."""
     max_size = get_terminal_size().columns - 1
     status = PROGRESS_FORMATS
-        if len(status) <= max_size:
-            break
-
+    if len(status) <= max_size:
+        break
     return status
 
 
