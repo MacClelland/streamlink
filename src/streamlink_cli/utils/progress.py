@@ -6,11 +6,7 @@ from time import time
 from ..compat import is_win32, get_terminal_size
 
 PROGRESS_FORMATS = (
-    "[download][{prefix}] Written {written} ({elapsed} @ {speed}/s)",
-    "[download] Written {written} ({elapsed} @ {speed}/s)",
-    "[download] {written} ({elapsed} @ {speed}/s)",
-    "[download] {written} ({elapsed})",
-    "[download] {written}"
+    "{written}"
 )
 
 # widths generated from
@@ -101,8 +97,7 @@ def create_status_line(**params):
     """Creates a status line with appropriate size."""
     max_size = get_terminal_size().columns - 1
 
-    for fmt in PROGRESS_FORMATS:
-        status = fmt.format(**params)
+        status = PROGRESS_FORMATS
 
         if len(status) <= max_size:
             break
@@ -118,31 +113,15 @@ def progress(iterator, prefix):
      - Time elapsed
      - Average speed, based on the last few seconds.
     """
-    if terminal_width(prefix) > 25:
-        prefix = (".." + get_cut_prefix(prefix, 23))
-    speed_updated = start = time()
     speed_written = written = 0
-    speed_history = deque(maxlen=5)
 
     for data in iterator:
         yield data
 
-        now = time()
-        elapsed = now - start
         written += len(data)
 
-        speed_elapsed = now - speed_updated
-        if speed_elapsed >= 0.5:
-            speed_history.appendleft((
-                written - speed_written,
-                speed_updated,
-            ))
-            speed_updated = now
             speed_written = written
 
-            speed_history_written = sum(h[0] for h in speed_history)
-            speed_history_elapsed = now - speed_history[-1][1]
-            speed = speed_history_written / speed_history_elapsed
 
             status = create_status_line(
                 written=format_filesize(written)
