@@ -6,7 +6,11 @@ from time import time
 from ..compat import is_win32, get_terminal_size
 
 PROGRESS_FORMATS = (
-    "{written}"
+    "[download][{prefix}] Written {written} ({elapsed} @ {speed}/s)",
+    "[download] Written {written} ({elapsed} @ {speed}/s)",
+    "[download] {written} ({elapsed} @ {speed}/s)",
+    "[download] {written} ({elapsed})",
+    "[download] {written}"
 )
 
 # widths generated from
@@ -14,13 +18,7 @@ PROGRESS_FORMATS = (
 
 
 widths = [
-    (13, 1),    (15, 0),    (126, 1),   (159, 0),   (687, 1),   (710, 0),
-    (711, 1),   (727, 0),   (733, 1),   (879, 0),   (1154, 1),  (1161, 0),
-    (4347, 1),  (4447, 2),  (7467, 1),  (7521, 0),  (8369, 1),  (8426, 0),
-    (9000, 1),  (9002, 2),  (11021, 1), (12350, 2), (12351, 1), (12438, 2),
-    (12442, 0), (19893, 2), (19967, 1), (55203, 2), (63743, 1), (64106, 2),
-    (65039, 1), (65059, 0), (65131, 2), (65279, 1), (65376, 2), (65500, 1),
-    (65510, 2), (120831, 1), (262141, 2), (1114109, 1)
+    (13, 1),    (15, 0),    (126, 1),   (159, 0)
 ]
 
 
@@ -93,12 +91,12 @@ def format_time(elapsed):
     return rval
 
 
-def create_status_line(*params):
+def create_status_line(**params):
     """Creates a status line with appropriate size."""
     max_size = get_terminal_size().columns - 1
 
     for fmt in PROGRESS_FORMATS:
-        status = fmt.format(*params)
+        status = fmt.format(**params)
 
         if len(status) <= max_size:
             break
@@ -114,16 +112,38 @@ def progress(iterator, prefix):
      - Time elapsed
      - Average speed, based on the last few seconds.
     """
+    if terminal_width(prefix) > 25:
+        prefix = (".." + get_cut_prefix(prefix, 23))
+    speed_updated = start = time()
     speed_written = written = 0
+    speed_history = deque(maxlen=5)
 
     for data in iterator:
         yield data
 
+        now = time()
+        elapsed = now - start
         written += len(data)
-        speed_written = written
-        status = create_status_line(
-        written=format_filesize(written)
-        )
-        print_inplace(status)
+
+        speed_elapsed = now - speed_updated
+        if speed_elapsed >= 0.5:
+            speed_history.appendleft((
+                written - speed_written,
+                speed_updated,
+            ))
+            speed_updated = now
+            speed_written = written
+
+            speed_history_written = sum(h[0] for h in speed_history)
+            speed_history_elapsed = now - speed_history[-1][1]
+            speed = speed_history_written / speed_history_elapsed
+
+            status = create_status_line(
+                prefix=prefix,
+                written=format_filesize(written),
+                elapsed=format_time(elapsed),
+                speed=format_filesize(speed)
+            )
+            print_inplace(status)
     sys.stderr.write("\n")
     sys.stderr.flush()
