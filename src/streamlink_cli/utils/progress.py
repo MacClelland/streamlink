@@ -93,10 +93,16 @@ def format_time(elapsed):
     return rval
 
 
-def create_status_line(**params):
+def create_status_line(*params):
     """Creates a status line with appropriate size."""
     max_size = get_terminal_size().columns - 1
-    status = PROGRESS_FORMATS
+
+    for fmt in PROGRESS_FORMATS:
+        status = fmt.format(*params)
+
+        if len(status) <= max_size:
+            break
+
     return status
 
 
