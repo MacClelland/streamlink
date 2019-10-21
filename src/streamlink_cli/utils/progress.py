@@ -18,7 +18,7 @@ PROGRESS_FORMATS = (
 
 
 widths = [
-    (13, 1)
+    (0, 0)
 ]
 
 
@@ -113,7 +113,7 @@ def progress(iterator, prefix):
      - Average speed, based on the last few seconds.
     """
     if terminal_width(prefix) > 25:
-        prefix = (".." + get_cut_prefix(prefix, 23))
+        prefix = (".." + get_cut_prefix(prefix, 50))
     speed_updated = start = time()
     speed_written = written = 0
     speed_history = deque(maxlen=5)
